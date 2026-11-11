@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0d0f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Piano</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="piano-app" class="piano-shell" data-theme="classic" data-orientation="auto">
+    <div class="piano-case" id="piano-case">
+      <div class="piano-rail" id="piano-rail" aria-hidden="true">
+        <div class="piano-felt"></div>
+      </div>
+      <div id="keyboards-stage" class="keyboards-stage" role="application" aria-label="Piano"></div>
+      <div class="piano-front-lip" aria-hidden="true"></div>
+    </div>
+  </main>
+
+  <dialog id="config-dialog" closedby="any" aria-labelledby="config-title">
+    <form method="dialog" class="config-form" id="config-form">
+      <header class="config-header">
+        <h2 id="config-title">Configuración</h2>
+        <button type="submit" value="close" class="btn-close" aria-label="Cerrar configuración" autofocus>✕</button>
+      </header>
+
+      <div class="config-body">
+        <fieldset class="config-section">
+          <legend>Sonido e Instrumento</legend>
+
+          <div class="radio-cards" role="radiogroup" aria-label="Instrumento">
+            <label class="radio-card" for="inst-grand">
+              <input type="radio" id="inst-grand" name="instrument" value="grand" class="visually-hidden" checked>
+              <span>Piano de Cola</span>
+            </label>
+            <label class="radio-card" for="inst-felt">
+              <input type="radio" id="inst-felt" name="instrument" value="felt" class="visually-hidden">
+              <span>Piano Íntimo (Felt)</span>
+            </label>
+            <label class="radio-card" for="inst-epiano">
+              <input type="radio" id="inst-epiano" name="instrument" value="epiano" class="visually-hidden">
+              <span>Piano Eléctrico</span>
+            </label>
+            <label class="radio-card" for="inst-synth">
+              <input type="radio" id="inst-synth" name="instrument" value="synth" class="visually-hidden">
+              <span>Sintetizador Cálido</span>
+            </label>
+            <label class="radio-card" for="inst-harpsichord">
+              <input type="radio" id="inst-harpsichord" name="instrument" value="harpsichord" class="visually-hidden">
+              <span>Clavicordio</span>
+            </label>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label">
+              <label for="cfg-volume">Volumen</label>
+              <output id="out-volume" for="cfg-volume">85%</output>
+            </div>
+            <input type="range" id="cfg-volume" name="volume" min="0" max="100" value="85">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label">
+              <label for="cfg-reverb">Reverberación acústica</label>
+              <output id="out-reverb" for="cfg-reverb">35%</output>
+            </div>
+            <input type="range" id="cfg-reverb" name="reverb" min="0" max="100" value="35">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label">
+              <label for="cfg-sustain">Sustain (Resonancia)</label>
+              <output id="out-sustain" for="cfg-sustain">1.8 s</output>
+            </div>
+            <input type="range" id="cfg-sustain" name="sustain" min="20" max="450" value="180">
+          </div>
+
+          <div class="control-row">
+            <div class="control-label">
+              <label for="cfg-brightness">Brillo del martillo</label>
+              <output id="out-brightness" for="cfg-brightness">60%</output>
+            </div>
+            <input type="range" id="cfg-brightness" name="brightness" min="10" max="100" value="60">
+          </div>
+        </fieldset>
+
+        <fieldset class="config-section">
+          <legend>Teclado y Disposición Móvil</legend>
+
+          <div class="control-row">
+            <label for="cfg-keys-mode">Teclas visibles</label>
+            <select id="cfg-keys-mode" name="keysMode">
+              <option value="auto">Automático (según pantalla)</option>
+              <option value="8">1 Octava (8 teclas blancas · ideal móvil)</option>
+              <option value="11">1.5 Octavas (11 teclas blancas)</option>
+              <option value="15">2 Octavas (15 teclas blancas)</option>
+              <option value="22">3 Octavas (22 teclas blancas)</option>
+              <option value="29">4 Octavas (29 teclas blancas)</option>
+            </select>
+          </div>
+
+          <div class="control-row">
+            <label for="cfg-portrait-mode">Disposición en móvil vertical</label>
+            <select id="cfg-portrait-mode" name="portraitMode">
+              <option value="single">Teclado único adaptable</option>
+              <option value="dual">Doble teclado apilado (2 octavas)</option>
+              <option value="rotated">Apaisado girado 90° (pantalla completa)</option>
+            </select>
+          </div>
+
+          <div class="control-grid-2">
+            <div class="control-row">
+              <label for="cfg-octave">Octava base</label>
+              <select id="cfg-octave" name="baseOctave">
+                <option value="2">Do2 (C2 · Grave)</option>
+                <option value="3">Do3 (C3 · Media-grave)</option>
+                <option value="4" selected>Do4 (C4 · Central)</option>
+                <option value="5">Do5 (C5 · Aguda)</option>
+              </select>
+            </div>
+
+            <div class="control-row">
+              <label for="cfg-tuning">Afinación (La4)</label>
+              <select id="cfg-tuning" name="tuning">
+                <option value="432">432 Hz</option>
+                <option value="440" selected>440 Hz (Estándar)</option>
+                <option value="442">442 Hz (Orquesta)</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="config-section">
+          <legend>Acabado y Respuesta Táctil</legend>
+
+          <div class="radio-cards" role="radiogroup" aria-label="Acabado visual">
+            <label class="radio-card" for="theme-classic">
+              <input type="radio" id="theme-classic" name="theme" value="classic" class="visually-hidden" checked>
+              <span>Ébano y Marfil</span>
+            </label>
+            <label class="radio-card" for="theme-studio">
+              <input type="radio" id="theme-studio" name="theme" value="studio" class="visually-hidden">
+              <span>Estudio Nocturno</span>
+            </label>
+            <label class="radio-card" for="theme-nordic">
+              <input type="radio" id="theme-nordic" name="theme" value="nordic" class="visually-hidden">
+              <span>Madera Nórdica</span>
+            </label>
+            <label class="radio-card" for="theme-minimal">
+              <input type="radio" id="theme-minimal" name="theme" value="minimal" class="visually-hidden">
+              <span>Minimalista</span>
+            </label>
+          </div>
+
+          <div class="toggles-list">
+            <label class="toggle-item" for="cfg-glissando">
+              <input type="checkbox" id="cfg-glissando" name="glissando" class="visually-hidden" checked>
+              <span>Glissando al deslizar el dedo</span>
+            </label>
+
+            <label class="toggle-item" for="cfg-haptics">
+              <input type="checkbox" id="cfg-haptics" name="haptics" class="visually-hidden" checked>
+              <span>Respuesta háptica en móvil</span>
+            </label>
+
+            <label class="toggle-item" for="cfg-velocity-y">
+              <input type="checkbox" id="cfg-velocity-y" name="dynamicVelocity" class="visually-hidden" checked>
+              <span>Dinámica según altura de pulsación</span>
+            </label>
+
+            <label class="toggle-item" for="cfg-labels">
+              <input type="checkbox" id="cfg-labels" name="showLabels" class="visually-hidden">
+              <span>Mostrar notas en las teclas</span>
+            </label>
+          </div>
+        </fieldset>
+      </div>
+
+      <footer class="config-footer">
+        <button type="button" id="btn-reset-config" class="btn-secondary">Restaurar</button>
+        <button type="submit" value="apply" class="btn-primary">Volver al piano</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
