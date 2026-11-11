@@ -946,8 +946,8 @@
         <div class="bar-group bar-toggles">
           <div class="bar-sustain-control" title="Nivel de Sustain (Resonancia)">
             <label for="bar-sustain" class="bar-sustain-label">Sustain</label>
-            <input type="range" id="bar-sustain" class="bar-sustain-slider" min="20" max="1200" value="350" aria-label="Nivel de Sustain">
-            <output id="bar-sustain-val" for="bar-sustain" class="bar-sustain-val">3.5s</output>
+            <input type="range" id="bar-sustain" class="bar-sustain-slider" min="20" max="220" value="120" aria-label="Nivel de Sustain">
+            <output id="bar-sustain-val" for="bar-sustain" class="bar-sustain-val">1.2s</output>
           </div>
 
           <button type="button" id="btn-toggle-labels" class="bar-btn bar-btn-led" aria-pressed="false">
@@ -1028,9 +1028,9 @@
           <div class="control-row">
             <div class="control-label">
               <label for="cfg-sustain">Sustain (Resonancia)</label>
-              <output id="out-sustain" for="cfg-sustain">3.5 s</output>
+              <output id="out-sustain" for="cfg-sustain">1.2 s</output>
             </div>
-            <input type="range" id="cfg-sustain" name="sustain" min="20" max="1200" value="350">
+            <input type="range" id="cfg-sustain" name="sustain" min="20" max="220" value="120">
           </div>
 
           <div class="control-row">
@@ -1396,7 +1396,7 @@
         );
 
         const pitchScale = Math.pow(2, (60 - midi) / 36);
-        const releaseSec = Math.max(0.2, (Number(this.config.sustain) || 350) / 100);
+        const releaseSec = Math.max(0.2, Math.min(2.2, (Number(this.config.sustain) || 120) / 100));
         const naturalDecay = Math.max(6.0, releaseSec * 2.2) * pitchScale;
         const peakGain = 0.32 * Math.pow(vel, 1.15);
         const attackTime = inst === 'felt' ? 0.008 : inst === 'synth' ? 0.018 : 0.003;
@@ -1431,8 +1431,8 @@
         voice.released = true;
         this.activeVoices.delete(midi);
 
-        // config.sustain is in centiseconds (e.g. 350 = 3.5 seconds)
-        const releaseSec = Math.max(0.2, (Number(this.config.sustain) || 350) / 100);
+        // config.sustain is in centiseconds (20 = 0.2s, 220 = 2.2s)
+        const releaseSec = Math.max(0.2, Math.min(2.2, (Number(this.config.sustain) || 120) / 100));
         this.stopVoice(voice, releaseSec);
       }
 
@@ -1492,7 +1492,7 @@
       instrument: 'grand',
       volume: 85,
       reverb: 35,
-      sustain: 350,
+      sustain: 120,
       brightness: 60,
       keysMode: 'auto',
       minKeyWidth: 42,
@@ -1530,7 +1530,9 @@
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return { ...DEFAULT_CONFIG };
-        return { ...DEFAULT_CONFIG, ...JSON.parse(raw) };
+        const merged = { ...DEFAULT_CONFIG, ...JSON.parse(raw) };
+        merged.sustain = Math.max(20, Math.min(220, Number(merged.sustain) || 120));
+        return merged;
       } catch {
         return { ...DEFAULT_CONFIG };
       }
@@ -1549,7 +1551,7 @@
     function getEffectiveAudioConfig() {
       return {
         ...config,
-        sustain: Number(config.sustain) || 350
+        sustain: Math.max(20, Math.min(220, Number(config.sustain) || 120))
       };
     }
 
@@ -1696,7 +1698,7 @@
       if (firstNote && lastNote) {
         octaveRangeDisplay.textContent = `${firstNote}–${lastNote}`;
       }
-      const sus = Number(config.sustain) || 350;
+      const sus = Math.max(20, Math.min(220, Number(config.sustain) || 120));
       barInstrument.value = config.instrument;
       barSustain.value = String(sus);
       barSustainVal.value = `${(sus / 100).toFixed(1)}s`;
@@ -1909,8 +1911,8 @@
     });
 
     barSustain.addEventListener('input', () => {
-      const prevSustain = Number(config.sustain) || 350;
-      const newSustain = Number(barSustain.value) || 350;
+      const prevSustain = Number(config.sustain) || 120;
+      const newSustain = Math.max(20, Math.min(220, Number(barSustain.value) || 120));
       config.sustain = newSustain;
       barSustainVal.value = `${(newSustain / 100).toFixed(1)}s`;
       updateRangeProgressFallback(barSustain);
