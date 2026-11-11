@@ -7,11 +7,966 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Piano</title>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    @layer reset, base, theme, components, utilities;
+
+    @layer reset {
+      html, body, main, div, header, footer, form, fieldset, legend,
+      h2, button, a, label, input, select, output, span {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      button, input, select {
+        font: inherit;
+        color: inherit;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      fieldset {
+        border: 0;
+      }
+    }
+
+    @layer theme {
+      :root {
+        color-scheme: light dark;
+        --brand-color: #c99738;
+        --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+        /* Classic Grand Piano Theme (Default) */
+        --case-bg: linear-gradient(180deg, #1e1917 0%, #110e0d 50%, #090807 100%);
+        --case-border: #332a26;
+        --case-shadow:
+          0 28px 65px rgba(0, 0, 0, 0.82),
+          0 6px 18px rgba(0, 0, 0, 0.6),
+          inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        --rail-bg: linear-gradient(180deg, #1b1716 0%, #0d0b0a 78%, #282220 100%);
+        --rail-border: #352c28;
+        --felt-color: linear-gradient(180deg, #5e0b10 0%, #8e161d 55%, #4a080c 100%);
+        --felt-shadow: 0 3px 8px rgba(0, 0, 0, 0.7);
+        --stage-bg: radial-gradient(circle at 50% 45%, #171514 0%, #090808 100%);
+
+        --white-key-bg: linear-gradient(180deg, #f5f3ee 0%, #ffffff 14%, #fbfaf7 88%, #eae6dc 100%);
+        --white-key-active-bg: linear-gradient(180deg, #e8e4da 0%, #f3efe6 50%, #dfd9cc 100%);
+        --white-key-border: #b8b2a6;
+        --white-key-lip: #cdc7b8;
+        --white-key-lip-active: #b5ae9e;
+        --white-key-shadow: inset 0 1px 0 #ffffff, 0 2px 4px rgba(0, 0, 0, 0.35);
+        --white-key-active-glow: inset 0 -10px 22px rgba(201, 151, 56, 0.22);
+        --white-key-text: #6e685f;
+
+        --black-key-bg: linear-gradient(180deg, #2b2927 0%, #151413 70%, #090908 100%);
+        --black-key-top: linear-gradient(180deg, #3a3734 0%, #1d1b1a 88%, #2d2a28 100%);
+        --black-key-active-bg: linear-gradient(180deg, #1f1d1b 0%, #100f0e 85%, #24201c 100%);
+        --black-key-active-top: linear-gradient(180deg, #292623 0%, #181615 90%, #3a3022 100%);
+        --black-key-border: #050505;
+        --black-key-shadow:
+          0 8px 14px rgba(0, 0, 0, 0.58),
+          0 2px 3px rgba(0, 0, 0, 0.7),
+          inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        --black-key-active-shadow:
+          0 3px 5px rgba(0, 0, 0, 0.65),
+          inset 0 1px 2px rgba(201, 151, 56, 0.35);
+        --black-key-text: #a59f94;
+
+        /* Config Dialog Tokens */
+        --dlg-bg: rgba(20, 19, 22, 0.96);
+        --dlg-surface: rgba(34, 33, 38, 0.9);
+        --dlg-surface-hover: rgba(46, 45, 52, 0.95);
+        --dlg-border: rgba(255, 255, 255, 0.12);
+        --dlg-text: #f3f1ed;
+        --dlg-text-muted: #aba69e;
+      }
+
+      /* Studio Nocturno Theme */
+      .piano-shell[data-theme="studio"] {
+        --brand-color: #38bdf8;
+        --case-bg: linear-gradient(180deg, #131923 0%, #0b0e14 60%, #06080c 100%);
+        --case-border: #1e293b;
+        --rail-bg: linear-gradient(180deg, #0f1319 0%, #090b10 80%, #18202c 100%);
+        --rail-border: #1e293b;
+        --felt-color: linear-gradient(90deg, #0284c7 0%, #38bdf8 50%, #0284c7 100%);
+        --stage-bg: radial-gradient(circle at 50% 45%, #111827 0%, #05070b 100%);
+
+        --white-key-bg: linear-gradient(180deg, #1e2430 0%, #262e3d 15%, #1d2330 88%, #151a24 100%);
+        --white-key-active-bg: linear-gradient(180deg, #192231 0%, #1e2d42 60%, #16263b 100%);
+        --white-key-border: #0d1117;
+        --white-key-lip: #10141d;
+        --white-key-lip-active: #0c1017;
+        --white-key-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 4px rgba(0, 0, 0, 0.6);
+        --white-key-active-glow: inset 0 -14px 28px rgba(56, 189, 248, 0.28);
+        --white-key-text: #94a3b8;
+
+        --black-key-bg: linear-gradient(180deg, #0f131a 0%, #090c10 75%, #05070a 100%);
+        --black-key-top: linear-gradient(180deg, #1a202c 0%, #0d1117 90%, #1e293b 100%);
+        --black-key-active-bg: linear-gradient(180deg, #0b131e 0%, #091526 85%, #0c213b 100%);
+        --black-key-active-top: linear-gradient(180deg, #132338 0%, #0f1d30 90%, #38bdf8 100%);
+        --black-key-border: #030406;
+        --black-key-text: #64748b;
+      }
+
+      /* Madera Nórdica Theme */
+      .piano-shell[data-theme="nordic"] {
+        --brand-color: #d97706;
+        --case-bg: linear-gradient(180deg, #6e4223 0%, #4d2d16 55%, #38200f 100%);
+        --case-border: #8c5832;
+        --rail-bg: linear-gradient(180deg, #7c4d2b 0%, #5c371d 78%, #8c5832 100%);
+        --rail-border: #9a653f;
+        --felt-color: linear-gradient(180deg, #2f4f3e 0%, #3d6852 55%, #233b2e 100%);
+        --stage-bg: radial-gradient(circle at 50% 45%, #241811 0%, #0f0a07 100%);
+
+        --white-key-bg: linear-gradient(180deg, #faf6ed 0%, #fffdf9 16%, #f7f1e3 88%, #e6decb 100%);
+        --white-key-active-bg: linear-gradient(180deg, #ede5d2 0%, #f4ecda 55%, #ded4be 100%);
+        --white-key-border: #c2b7a1;
+        --white-key-lip: #d1c6b0;
+        --white-key-lip-active: #b8ad96;
+        --white-key-active-glow: inset 0 -10px 22px rgba(217, 119, 6, 0.2);
+        --white-key-text: #786c5c;
+
+        --black-key-bg: linear-gradient(180deg, #3d2c20 0%, #261b13 75%, #1a120c 100%);
+        --black-key-top: linear-gradient(180deg, #523b2b 0%, #332419 88%, #473325 100%);
+        --black-key-active-bg: linear-gradient(180deg, #2e2017 0%, #1c130d 85%, #362519 100%);
+        --black-key-active-top: linear-gradient(180deg, #3d2b1f 0%, #261b13 90%, #593e2c 100%);
+        --black-key-border: #140e09;
+        --black-key-text: #b8a99a;
+      }
+
+      /* Minimalista Theme */
+      .piano-shell[data-theme="minimal"] {
+        --brand-color: #71717a;
+        --case-bg: #18181b;
+        --case-border: #27272a;
+        --rail-bg: #111113;
+        --rail-border: #27272a;
+        --felt-color: #27272a;
+        --felt-shadow: none;
+        --stage-bg: #09090b;
+
+        --white-key-bg: #ffffff;
+        --white-key-active-bg: #e4e4e7;
+        --white-key-border: #d4d4d8;
+        --white-key-lip: #e4e4e7;
+        --white-key-lip-active: #d4d4d8;
+        --white-key-shadow: none;
+        --white-key-active-glow: none;
+        --white-key-text: #71717a;
+
+        --black-key-bg: #18181b;
+        --black-key-top: #27272a;
+        --black-key-active-bg: #3f3f46;
+        --black-key-active-top: #52525b;
+        --black-key-border: #09090b;
+        --black-key-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+        --black-key-active-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        --black-key-text: #a1a1aa;
+      }
+    }
+
+    @layer base {
+      html, body {
+        inline-size: 100%;
+        block-size: 100dvh;
+        overflow: clip;
+        background: var(--stage-bg);
+        font-family: var(--font-sans);
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        overscroll-behavior: none;
+        touch-action: none;
+      }
+
+      body {
+        accent-color: var(--brand-color);
+      }
+    }
+
+    @layer components {
+      /* Main Viewport Stage — Centers the Proportional Piano Instrument */
+      .piano-shell {
+        --stage-w: calc(100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+        --stage-h: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+        position: relative;
+        inline-size: 100dvw;
+        block-size: 100dvh;
+        display: grid;
+        place-items: center;
+        background: var(--stage-bg);
+        overflow: clip;
+        padding-inline-start: max(4px, env(safe-area-inset-left, 0px));
+        padding-inline-end: max(4px, env(safe-area-inset-right, 0px));
+        padding-block-start: max(4px, env(safe-area-inset-top, 0px));
+        padding-block-end: max(4px, env(safe-area-inset-bottom, 0px));
+      }
+
+      /* Rotated 90° Portrait Mode (Swaps stage dimensions while keeping exact key proportions) */
+      @media (orientation: portrait) {
+        .piano-shell[data-portrait-mode="rotated"] {
+          --stage-w: 100dvh;
+          --stage-h: 100dvw;
+          position: fixed;
+          inset-block-start: 0;
+          inset-inline-start: 100dvw;
+          inline-size: 100dvh;
+          block-size: 100dvw;
+          transform-origin: 0 0;
+          transform: rotate(90deg);
+          padding: 4px;
+        }
+      }
+
+      /* Physical Piano Chassis — Maximizes width while preserving piano proportions */
+      .piano-case {
+        --case-pad-inline: clamp(6px, 1.2vmin, 14px);
+        --bar-h: clamp(36px, 7.5vmin, 46px);
+        --rail-h: clamp(10px, 2vmin, 18px);
+        --front-lip-h: clamp(6px, 1.2vmin, 12px);
+        --avail-w: calc(var(--stage-w) - (var(--case-pad-inline) * 2) - 8px);
+        --avail-h: calc((var(--stage-h) - var(--bar-h) - var(--rail-h) - var(--front-lip-h) - 16px) / var(--decks-count, 1));
+
+        display: flex;
+        flex-direction: column;
+        inline-size: fit-content;
+        block-size: fit-content;
+        padding-inline: var(--case-pad-inline);
+        background: var(--case-bg);
+        border: 1px solid var(--case-border);
+        border-radius: clamp(8px, 1.5vmin, 14px);
+        box-shadow: var(--case-shadow);
+        overflow: clip;
+      }
+
+      /* Top Hardware Control Panel */
+      .piano-control-bar {
+        inline-size: 100%;
+        block-size: var(--bar-h);
+        display: flex;
+        align-items: safe center;
+        justify-content: space-between;
+        gap: clamp(4px, 1.2vw, 12px);
+        padding-inline: 2px;
+        color: #e4e0d8;
+        font-size: clamp(0.72rem, 0.65rem + 0.3vw, 0.84rem);
+      }
+
+      .bar-group {
+        display: flex;
+        align-items: safe center;
+        gap: clamp(3px, 0.6vw, 6px);
+        min-inline-size: 0;
+      }
+
+      .bar-end {
+        margin-inline-start: auto;
+      }
+
+      .bar-btn {
+        display: inline-flex;
+        align-items: safe center;
+        justify-content: center;
+        gap: 5px;
+        block-size: clamp(26px, 5.5vmin, 32px);
+        padding-inline: clamp(7px, 1.2vw, 11px);
+        border-radius: 7px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+        color: #f3f1ed;
+        font-weight: 550;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 120ms ease, border-color 120ms ease;
+      }
+
+      .bar-btn:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .bar-btn:active:not(:disabled) {
+        transform: translateY(1px);
+      }
+
+      .bar-btn-icon {
+        inline-size: clamp(26px, 5.5vmin, 32px);
+        padding-inline: 0;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .bar-readout {
+        min-inline-size: 4.6rem;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        color: var(--brand-color);
+        background: rgba(0, 0, 0, 0.38);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
+        padding-block: 4px;
+        padding-inline: 6px;
+        white-space: nowrap;
+      }
+
+      .bar-select {
+        block-size: clamp(26px, 5.5vmin, 32px);
+        padding-block: 0;
+        padding-inline: clamp(6px, 1vw, 10px);
+        border-radius: 7px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+        color: #f3f1ed;
+        font-size: inherit;
+        font-weight: 550;
+        inline-size: auto;
+        max-inline-size: clamp(92px, 24vw, 160px);
+      }
+
+      .bar-btn-led .led-dot {
+        inline-size: 7px;
+        block-size: 7px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.22);
+        transition: background-color 150ms ease, box-shadow 150ms ease;
+      }
+
+      .bar-btn-led[aria-pressed="true"] {
+        border-color: var(--brand-color);
+        background: rgba(201, 151, 56, 0.16);
+      }
+
+      .bar-btn-led[aria-pressed="true"] .led-dot {
+        background: var(--brand-color);
+        box-shadow: 0 0 8px var(--brand-color);
+      }
+
+      .bar-sustain-control {
+        display: inline-flex;
+        align-items: safe center;
+        gap: clamp(4px, 0.8vw, 8px);
+        block-size: clamp(26px, 5.5vmin, 32px);
+        padding-inline: clamp(7px, 1.1vw, 11px);
+        border-radius: 7px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .bar-sustain-label {
+        font-weight: 550;
+        color: #f3f1ed;
+        white-space: nowrap;
+      }
+
+      .bar-sustain-slider {
+        inline-size: clamp(54px, 11vw, 105px);
+        block-size: 1.1rem;
+        cursor: pointer;
+      }
+
+      .bar-sustain-val {
+        min-inline-size: 2.5rem;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        color: var(--brand-color);
+        font-size: 0.76rem;
+        white-space: nowrap;
+      }
+
+      @media (max-width: 560px) {
+        .config-btn-text,
+        .bar-sustain-label {
+          display: none;
+        }
+        .bar-readout {
+          min-inline-size: 3.8rem;
+          padding-inline: 4px;
+        }
+      }
+
+      /* Upper Piano Wood Rail & Felt Strip */
+      .piano-rail {
+        position: relative;
+        z-index: 10;
+        inline-size: 100%;
+        block-size: var(--rail-h);
+        background: var(--rail-bg);
+        border-block-end: 1px solid var(--rail-border);
+        display: flex;
+        align-items: flex-end;
+        box-shadow: var(--felt-shadow);
+        cursor: pointer;
+      }
+
+      .piano-felt {
+        inline-size: 100%;
+        block-size: clamp(4px, 0.8vmin, 7px);
+        background: var(--felt-color);
+      }
+
+      /* Bottom Piano Keybed Trim */
+      .piano-front-lip {
+        inline-size: 100%;
+        block-size: var(--front-lip-h);
+        background: var(--rail-bg);
+        border-block-start: 1px solid rgba(0, 0, 0, 0.65);
+      }
+
+      /* Keyboards Stage (Supports 1 deck or 2 stacked decks in dual portrait mode) */
+      .keyboards-stage {
+        display: flex;
+        flex-direction: column;
+        inline-size: fit-content;
+        block-size: fit-content;
+        background-color: #070606;
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.85);
+      }
+
+      /* Proportional Keyboard Deck:
+         Uses 100% of available width while maintaining realistic piano key proportions */
+      .keyboard-deck {
+        --key-ratio: 5.6;
+        --deck-w: min(var(--avail-w), calc(var(--white-keys, 15) * 68px));
+        container: keyboard / size;
+        position: relative;
+        inline-size: var(--deck-w);
+        block-size: min(var(--avail-h), calc(var(--deck-w) * var(--key-ratio) / var(--white-keys, 15)));
+        display: flex;
+        overflow: clip;
+        touch-action: none;
+      }
+
+      /* Subtle separator rail between dual stacked keyboards */
+      .keyboard-deck:not(:first-child) {
+        border-block-start: clamp(6px, 1.2vmin, 12px) solid #141110;
+      }
+
+      /* White Keys Row */
+      .white-keys {
+        display: flex;
+        inline-size: 100%;
+        block-size: 100%;
+        gap: 1px;
+        background-color: var(--white-key-border);
+      }
+
+      .piano-key {
+        position: relative;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        appearance: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: none;
+        cursor: pointer;
+        outline: none;
+      }
+
+      .piano-key:focus-visible {
+        outline: 2px solid var(--brand-color);
+        outline-offset: -3px;
+      }
+
+      .white-key {
+        flex: 1 1 0%;
+        min-inline-size: 0;
+        block-size: 100%;
+        background: var(--white-key-bg);
+        border-end-start-radius: clamp(5px, 1.2cqi, 10px);
+        border-end-end-radius: clamp(5px, 1.2cqi, 10px);
+        border-block-end: clamp(6px, 2.2cqb, 14px) solid var(--white-key-lip);
+        box-shadow: var(--white-key-shadow);
+        transform-origin: top center;
+        transition:
+          transform 45ms cubic-bezier(0.2, 0, 0, 1),
+          border-block-end-width 45ms cubic-bezier(0.2, 0, 0, 1),
+          background 60ms ease;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-block-end: clamp(8px, 2.5cqb, 18px);
+      }
+
+      .white-key.is-active {
+        background: var(--white-key-active-bg);
+        border-block-end-width: clamp(2px, 0.8cqb, 5px);
+        border-block-end-color: var(--white-key-lip-active);
+        box-shadow: var(--white-key-active-glow);
+        transform: translateY(2px);
+      }
+
+      /* Black Keys Layer */
+      .black-keys {
+        position: absolute;
+        inset-block-start: 0;
+        inset-inline: 0;
+        block-size: 60%;
+        pointer-events: none;
+        z-index: 4;
+      }
+
+      .black-key {
+        position: absolute;
+        inset-block-start: 0;
+        inset-inline-start: var(--black-left);
+        inline-size: var(--black-width);
+        block-size: 100%;
+        pointer-events: auto;
+        background: var(--black-key-bg);
+        border-inline: 1px solid var(--black-key-border);
+        border-block-end: 1px solid var(--black-key-border);
+        border-end-start-radius: clamp(4px, 0.9cqi, 8px);
+        border-end-end-radius: clamp(4px, 0.9cqi, 8px);
+        box-shadow: var(--black-key-shadow);
+        padding-inline: clamp(2px, 0.45cqi, 5px);
+        padding-block-end: clamp(8px, 2.6cqb, 16px);
+        display: flex;
+        align-items: stretch;
+        transform-origin: top center;
+        transition:
+          transform 40ms cubic-bezier(0.2, 0, 0, 1),
+          box-shadow 40ms ease,
+          padding-block-end 40ms cubic-bezier(0.2, 0, 0, 1);
+      }
+
+      /* Inner 3D Bevel Surface on Black Keys */
+      .black-key-surface {
+        flex: 1 1 auto;
+        background: var(--black-key-top);
+        border-end-start-radius: clamp(2px, 0.6cqi, 5px);
+        border-end-end-radius: clamp(2px, 0.6cqi, 5px);
+        border-block-end: 2px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-block-end: clamp(6px, 1.5cqb, 12px);
+        pointer-events: none;
+      }
+
+      .black-key.is-active {
+        background: var(--black-key-active-bg);
+        box-shadow: var(--black-key-active-shadow);
+        padding-block-end: clamp(3px, 1cqb, 6px);
+        transform: translateY(2px);
+      }
+
+      .black-key.is-active .black-key-surface {
+        background: var(--black-key-active-top);
+      }
+
+      /* Optional Key Note Labels */
+      .key-label {
+        display: none;
+        font-size: clamp(0.62rem, 1.8cqi, 0.85rem);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        pointer-events: none;
+        line-height: 1;
+      }
+
+      .white-key .key-label {
+        color: var(--white-key-text);
+      }
+
+      .black-key .key-label {
+        color: var(--black-key-text);
+        font-size: clamp(0.55rem, 1.3cqi, 0.72rem);
+      }
+
+      .piano-shell[data-labels="true"] .key-label {
+        display: block;
+      }
+
+      /* ==========================================================================
+         #config Modal Dialog (Native <dialog> following Modern Web Guidance)
+         ========================================================================== */
+      dialog:modal {
+        overscroll-behavior: contain;
+      }
+
+      dialog::backdrop {
+        overflow: hidden;
+        overscroll-behavior: contain;
+        background: rgba(5, 5, 7, 0.72);
+        backdrop-filter: blur(8px);
+      }
+
+      #config-dialog[open] {
+        margin: auto;
+        inline-size: min(92dvw, 540px);
+        max-block-size: min(88dvh, 720px);
+        border: 1px solid var(--dlg-border);
+        border-radius: 18px;
+        background: var(--dlg-bg);
+        color: var(--dlg-text);
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.65);
+        display: flex;
+        flex-direction: column;
+        overflow: clip;
+      }
+
+      .config-form {
+        display: flex;
+        flex-direction: column;
+        block-size: 100%;
+        max-block-size: min(88dvh, 720px);
+        min-block-size: 0;
+      }
+
+      .config-header {
+        display: flex;
+        align-items: safe center;
+        justify-content: space-between;
+        padding-block: 1rem;
+        padding-inline: 1.25rem;
+        border-block-end: 1px solid var(--dlg-border);
+      }
+
+      .config-header h2 {
+        font-size: clamp(1.05rem, 0.9rem + 0.6vw, 1.25rem);
+        font-weight: 650;
+        letter-spacing: -0.01em;
+      }
+
+      .btn-close {
+        inline-size: 2.25rem;
+        block-size: 2.25rem;
+        border-radius: 50%;
+        border: 1px solid var(--dlg-border);
+        background: var(--dlg-surface);
+        color: var(--dlg-text);
+        display: grid;
+        place-content: center;
+        cursor: pointer;
+        transition: background-color 150ms ease;
+      }
+
+      .btn-close:hover:not(:disabled) {
+        background: var(--dlg-surface-hover);
+      }
+
+      .config-body {
+        flex: 1 1 auto;
+        min-block-size: 0;
+        overflow-y: auto;
+        scrollbar-gutter: stable;
+        overscroll-behavior: contain;
+        padding-block: 1.15rem;
+        padding-inline: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.4rem;
+      }
+
+      .config-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+      }
+
+      .config-section legend {
+        font-size: clamp(0.75rem, 0.7rem + 0.25vw, 0.85rem);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--dlg-text-muted);
+        font-weight: 600;
+        margin-block-end: 0.65rem;
+      }
+
+      /* Radio Cards Styled Using Modern :has(:checked) */
+      .radio-cards {
+        display: flex;
+        flex-wrap: wrap;
+        flex-wrap: balance;
+        gap: 0.5rem;
+      }
+
+      .radio-card {
+        flex: 1 1 135px;
+        padding-block: 0.65rem;
+        padding-inline: 0.8rem;
+        border-radius: 10px;
+        border: 1px solid var(--dlg-border);
+        background: var(--dlg-surface);
+        font-size: 0.88rem;
+        font-weight: 500;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 150ms ease, background-color 150ms ease;
+      }
+
+      .radio-card:hover {
+        background: var(--dlg-surface-hover);
+      }
+
+      .radio-card:has(:checked) {
+        border-color: var(--brand-color);
+        background: rgba(201, 151, 56, 0.16);
+        color: #ffffff;
+      }
+
+      .radio-card:has(:focus-visible) {
+        outline: 2px solid var(--brand-color);
+        outline-offset: 2px;
+      }
+
+      .radio-card input[type="radio"].visually-hidden {
+        position: absolute;
+        clip-path: inset(50%);
+        overflow: hidden;
+        inline-size: 1px;
+        block-size: 1px;
+        white-space: nowrap;
+      }
+
+      .control-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .control-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        font-size: 0.9rem;
+      }
+
+      .control-label output {
+        font-variant-numeric: tabular-nums;
+        color: var(--dlg-text-muted);
+        font-size: 0.84rem;
+      }
+
+      .control-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.75rem;
+      }
+
+      select {
+        inline-size: 100%;
+        padding-block: 0.6rem;
+        padding-inline: 0.75rem;
+        border-radius: 10px;
+        border: 1px solid var(--dlg-border);
+        background: var(--dlg-surface);
+        color: var(--dlg-text);
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+
+      input[type="range"] {
+        inline-size: 100%;
+        block-size: 1.5rem;
+        cursor: pointer;
+      }
+
+      .toggles-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+      }
+
+      .toggle-item {
+        display: flex;
+        align-items: safe center;
+        gap: 0.65rem;
+        padding-block: 0.55rem;
+        padding-inline: 0.75rem;
+        border-radius: 10px;
+        border: 1px solid var(--dlg-border);
+        background: var(--dlg-surface);
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+
+      .toggle-item:has(:checked) {
+        border-color: rgba(201, 151, 56, 0.45);
+      }
+
+      .toggle-item input[type="checkbox"] {
+        inline-size: 1.15rem;
+        block-size: 1.15rem;
+        cursor: pointer;
+      }
+
+      .config-footer {
+        display: flex;
+        align-items: safe center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding-block: 0.95rem;
+        padding-inline: 1.25rem;
+        border-block-start: 1px solid var(--dlg-border);
+        background: var(--dlg-bg);
+      }
+
+      .btn-secondary,
+      .btn-primary {
+        padding-block: 0.65rem;
+        padding-inline: 1.1rem;
+        border-radius: 10px;
+        font-size: 0.92rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: background-color 150ms ease, transform 80ms ease;
+      }
+
+      .btn-secondary {
+        background: var(--dlg-surface);
+        border-color: var(--dlg-border);
+        color: var(--dlg-text);
+      }
+
+      .btn-secondary:hover:not(:disabled) {
+        background: var(--dlg-surface-hover);
+      }
+
+      .btn-primary {
+        margin-inline-start: auto;
+        background: var(--brand-color);
+        color: #0b0b0c;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        filter: brightness(1.08);
+      }
+
+      /* Progressive Enhancement Fallback for Browsers without accent-color */
+      @supports not (accent-color: var(--brand-color)) {
+        form input[type="checkbox"].visually-hidden {
+          position: absolute !important;
+          clip-path: inset(50%) !important;
+          overflow: hidden !important;
+          inline-size: 1px !important;
+          block-size: 1px !important;
+          margin: -1px !important;
+          padding: 0 !important;
+          border: 0 !important;
+          white-space: nowrap !important;
+        }
+
+        .toggle-item {
+          position: relative;
+          padding-inline-start: 2.4rem;
+        }
+
+        .toggle-item input[type="checkbox"] + span::before {
+          content: "";
+          position: absolute;
+          inset-inline-start: 0.75rem;
+          inset-block-start: 50%;
+          transform: translateY(-50%);
+          inline-size: 1.15rem;
+          block-size: 1.15rem;
+          border: 2px solid #888;
+          background: #1a1a1e;
+          border-radius: 4px;
+          box-sizing: border-box;
+        }
+
+        .toggle-item input[type="checkbox"]:focus-visible + span::before {
+          outline: 2px solid var(--brand-color);
+          outline-offset: 2px;
+        }
+
+        .toggle-item input[type="checkbox"]:checked + span::before {
+          background-color: var(--brand-color);
+          border-color: var(--brand-color);
+        }
+
+        .toggle-item input[type="checkbox"]:checked + span::after {
+          content: "✓";
+          position: absolute;
+          inset-inline-start: 0.95rem;
+          inset-block-start: 50%;
+          transform: translateY(-50%);
+          color: #0b0b0c;
+          font-weight: bold;
+          font-size: 0.85rem;
+        }
+
+        input[type="range"] {
+          -webkit-appearance: none;
+          appearance: none;
+          background: transparent;
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+          inline-size: 100%;
+          block-size: 8px;
+          background: linear-gradient(
+            to right,
+            var(--brand-color) var(--progress, 70%),
+            #444 var(--progress, 70%)
+          );
+          border-radius: 4px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          block-size: 16px;
+          inline-size: 16px;
+          border-radius: 50%;
+          background: var(--brand-color);
+          cursor: pointer;
+          margin-block-start: -4px;
+        }
+      }
+    }
+  </style>
 </head>
 <body>
   <main id="piano-app" class="piano-shell" data-theme="classic" data-orientation="auto">
     <div class="piano-case" id="piano-case">
+      <header class="piano-control-bar" aria-label="Panel de control del piano">
+        <div class="bar-group bar-octave" role="group" aria-label="Octava">
+          <button type="button" id="btn-oct-down" class="bar-btn bar-btn-icon" aria-label="Bajar octava" title="Bajar octava">−</button>
+          <span id="octave-range-display" class="bar-readout" aria-live="polite">Do4–Do5</span>
+          <button type="button" id="btn-oct-up" class="bar-btn bar-btn-icon" aria-label="Subir octava" title="Subir octava">+</button>
+        </div>
+
+        <div class="bar-group">
+          <select id="bar-instrument" class="bar-select" aria-label="Instrumento">
+            <option value="grand">Piano de Cola</option>
+            <option value="felt">Piano Íntimo</option>
+            <option value="epiano">Eléctrico</option>
+            <option value="synth">Sintetizador</option>
+            <option value="harpsichord">Clavicordio</option>
+          </select>
+        </div>
+
+        <div class="bar-group bar-toggles">
+          <div class="bar-sustain-control" title="Nivel de Sustain (Resonancia)">
+            <label for="bar-sustain" class="bar-sustain-label">Sustain</label>
+            <input type="range" id="bar-sustain" class="bar-sustain-slider" min="20" max="1200" value="350" aria-label="Nivel de Sustain">
+            <output id="bar-sustain-val" for="bar-sustain" class="bar-sustain-val">3.5s</output>
+          </div>
+
+          <button type="button" id="btn-toggle-labels" class="bar-btn bar-btn-led" aria-pressed="false">
+            <span class="led-dot" aria-hidden="true"></span>
+            <span>Notas</span>
+          </button>
+        </div>
+
+        <div class="bar-group bar-end">
+          <a href="#config" id="btn-open-config" class="bar-btn bar-btn-config" aria-label="Abrir configuración" title="Configuración">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span class="config-btn-text">Ajustes</span>
+          </a>
+        </div>
+      </header>
+
       <div class="piano-rail" id="piano-rail" aria-hidden="true">
         <div class="piano-felt"></div>
       </div>
@@ -73,9 +1028,9 @@
           <div class="control-row">
             <div class="control-label">
               <label for="cfg-sustain">Sustain (Resonancia)</label>
-              <output id="out-sustain" for="cfg-sustain">1.8 s</output>
+              <output id="out-sustain" for="cfg-sustain">3.5 s</output>
             </div>
-            <input type="range" id="cfg-sustain" name="sustain" min="20" max="450" value="180">
+            <input type="range" id="cfg-sustain" name="sustain" min="20" max="1200" value="350">
           </div>
 
           <div class="control-row">
@@ -91,15 +1046,23 @@
           <legend>Teclado y Disposición Móvil</legend>
 
           <div class="control-row">
-            <label for="cfg-keys-mode">Teclas visibles</label>
+            <label for="cfg-keys-mode">Modo de cantidad de teclas</label>
             <select id="cfg-keys-mode" name="keysMode">
-              <option value="auto">Automático (según pantalla)</option>
-              <option value="8">1 Octava (8 teclas blancas · ideal móvil)</option>
-              <option value="11">1.5 Octavas (11 teclas blancas)</option>
-              <option value="15">2 Octavas (15 teclas blancas)</option>
-              <option value="22">3 Octavas (22 teclas blancas)</option>
-              <option value="29">4 Octavas (29 teclas blancas)</option>
+              <option value="auto">Automático (máximas teclas posibles en pantalla)</option>
+              <option value="8">Fijo: 1 Octava (8 teclas blancas)</option>
+              <option value="11">Fijo: 1.5 Octavas (11 teclas blancas)</option>
+              <option value="15">Fijo: 2 Octavas (15 teclas blancas)</option>
+              <option value="22">Fijo: 3 Octavas (22 teclas blancas)</option>
+              <option value="29">Fijo: 4 Octavas (29 teclas blancas)</option>
             </select>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label">
+              <label for="cfg-min-key-width">Ancho mínimo de tecla blanca</label>
+              <output id="out-min-key-width" for="cfg-min-key-width">42 px</output>
+            </div>
+            <input type="range" id="cfg-min-key-width" name="minKeyWidth" min="32" max="64" value="42">
           </div>
 
           <div class="control-row">
@@ -113,7 +1076,7 @@
 
           <div class="control-grid-2">
             <div class="control-row">
-              <label for="cfg-octave">Octava base</label>
+              <label for="cfg-octave">Octava central / base</label>
               <select id="cfg-octave" name="baseOctave">
                 <option value="2">Do2 (C2 · Grave)</option>
                 <option value="3">Do3 (C3 · Media-grave)</option>
@@ -186,6 +1149,1002 @@
     </form>
   </dialog>
 
-  <script type="module" src="app.js"></script>
+  <script type="module">
+    class PianoAudioEngine {
+      constructor(config) {
+        this.config = config;
+        this.ctx = null;
+        this.masterGain = null;
+        this.dryGain = null;
+        this.wetGain = null;
+        this.convolver = null;
+        this.compressor = null;
+        this.waves = {};
+        this.hammerBuffer = null;
+        this.activeVoices = new Map();
+        this.releasedVoices = new Set();
+      }
+
+      ensureContext() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx({ latencyHint: 'interactive' });
+
+          this.compressor = this.ctx.createDynamicsCompressor();
+          this.compressor.threshold.value = -14;
+          this.compressor.knee.value = 18;
+          this.compressor.ratio.value = 4;
+          this.compressor.attack.value = 0.002;
+          this.compressor.release.value = 0.18;
+
+          this.masterGain = this.ctx.createGain();
+          this.dryGain = this.ctx.createGain();
+          this.wetGain = this.ctx.createGain();
+          this.convolver = this.ctx.createConvolver();
+
+          this.convolver.buffer = this.createReverbImpulse(2.4, 2.8);
+          this.hammerBuffer = this.createHammerNoiseBuffer();
+          this.buildPeriodicWaves();
+
+          this.dryGain.connect(this.compressor);
+          this.convolver.connect(this.wetGain);
+          this.wetGain.connect(this.compressor);
+          this.compressor.connect(this.masterGain);
+          this.masterGain.connect(this.ctx.destination);
+
+          this.applySettings();
+        }
+
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      updateConfig(newConfig) {
+        this.config = newConfig;
+        if (this.ctx) {
+          this.applySettings();
+        }
+      }
+
+      applySettings() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const vol = Math.max(0, Math.min(1, this.config.volume / 100));
+        const rev = Math.max(0, Math.min(1, this.config.reverb / 100));
+
+        this.masterGain.gain.setTargetAtTime(vol * 0.9, now, 0.015);
+        this.dryGain.gain.setTargetAtTime(1 - rev * 0.28, now, 0.015);
+        this.wetGain.gain.setTargetAtTime(rev * 0.65, now, 0.015);
+      }
+
+      buildPeriodicWaves() {
+        const grandReal = new Float32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        const grandImag = new Float32Array([
+          0, 1.0, 0.52, 0.28, 0.16, 0.09, 0.05, 0.025, 0.012, 0.006, 0.003
+        ]);
+        this.waves.grand = this.ctx.createPeriodicWave(grandReal, grandImag);
+
+        const feltReal = new Float32Array([0, 0, 0, 0, 0, 0, 0]);
+        const feltImag = new Float32Array([0, 1.0, 0.34, 0.11, 0.03, 0.008, 0.002]);
+        this.waves.felt = this.ctx.createPeriodicWave(feltReal, feltImag);
+
+        const epReal = new Float32Array([0, 0, 0, 0, 0, 0]);
+        const epImag = new Float32Array([0, 1.0, 0.22, 0.08, 0.02, 0.01]);
+        this.waves.epiano = this.ctx.createPeriodicWave(epReal, epImag);
+
+        const harpReal = new Float32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        const harpImag = new Float32Array([
+          0, 1.0, 0.85, 0.68, 0.52, 0.38, 0.29, 0.22, 0.15, 0.11, 0.08, 0.05, 0.03
+        ]);
+        this.waves.harpsichord = this.ctx.createPeriodicWave(harpReal, harpImag);
+      }
+
+      createHammerNoiseBuffer() {
+        const sampleRate = this.ctx.sampleRate;
+        const length = Math.floor(sampleRate * 0.045);
+        const buffer = this.ctx.createBuffer(1, length, sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < length; i++) {
+          const env = Math.exp(-i / (sampleRate * 0.007));
+          data[i] = (Math.random() * 2 - 1) * env;
+        }
+        return buffer;
+      }
+
+      createReverbImpulse(duration, decay) {
+        const sampleRate = this.ctx.sampleRate;
+        const length = Math.floor(sampleRate * duration);
+        const impulse = this.ctx.createBuffer(2, length, sampleRate);
+
+        for (let ch = 0; ch < 2; ch++) {
+          const data = impulse.getChannelData(ch);
+          let lp = 0;
+          for (let i = 0; i < length; i++) {
+            const t = i / length;
+            const env = Math.pow(1 - t, decay);
+            const white = (Math.random() * 2 - 1) * env;
+            lp = lp * 0.68 + white * 0.32;
+            data[i] = lp * 0.55;
+          }
+          const reflections = [0.014, 0.027, 0.043, 0.061];
+          for (const r of reflections) {
+            const idx = Math.floor(r * sampleRate);
+            if (idx < length) {
+              data[idx] += (ch === 0 ? 0.22 : -0.22) * Math.exp(-r * 6);
+            }
+          }
+        }
+        return impulse;
+      }
+
+      midiToFreq(midi) {
+        const a4 = Number(this.config.tuning) || 440;
+        return a4 * Math.pow(2, (midi - 69) / 12);
+      }
+
+      noteOn(midi, velocity = 0.8) {
+        this.ensureContext();
+        if (this.activeVoices.has(midi)) {
+          this.stopVoice(this.activeVoices.get(midi), 0.025);
+          this.activeVoices.delete(midi);
+        }
+
+        const now = this.ctx.currentTime;
+        const freq = this.midiToFreq(midi);
+        const inst = this.config.instrument || 'grand';
+        const brightness = (Number(this.config.brightness) || 60) / 100;
+        const vel = Math.max(0.18, Math.min(1, velocity));
+
+        const voiceGain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+
+        let outputNode = voiceGain;
+        if (typeof this.ctx.createStereoPanner === 'function') {
+          const panner = this.ctx.createStereoPanner();
+          const pan = Math.max(-0.48, Math.min(0.48, (midi - 64) / 42));
+          panner.pan.setValueAtTime(pan, now);
+          voiceGain.connect(panner);
+          outputNode = panner;
+        }
+
+        outputNode.connect(this.dryGain);
+        outputNode.connect(this.convolver);
+
+        filter.connect(voiceGain);
+
+        const oscs = [];
+
+        const osc1 = this.ctx.createOscillator();
+        osc1.frequency.setValueAtTime(freq, now);
+
+        const osc2 = this.ctx.createOscillator();
+        const osc2Gain = this.ctx.createGain();
+        osc2.frequency.setValueAtTime(freq, now);
+
+        if (inst === 'synth') {
+          osc1.type = 'sawtooth';
+          osc1.detune.setValueAtTime(-6, now);
+          osc2.type = 'triangle';
+          osc2.detune.setValueAtTime(6, now);
+          osc2Gain.gain.setValueAtTime(0.55, now);
+        } else if (inst === 'epiano') {
+          osc1.setPeriodicWave(this.waves.epiano);
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(freq * 7, now);
+          osc2Gain.gain.setValueAtTime(0.16 * vel * brightness, now);
+          osc2Gain.gain.exponentialRampToValueAtTime(0.0005, now + 0.35);
+        } else if (inst === 'felt') {
+          osc1.setPeriodicWave(this.waves.felt);
+          osc2.setPeriodicWave(this.waves.felt);
+          osc2.detune.setValueAtTime(2.5, now);
+          osc2Gain.gain.setValueAtTime(0.35, now);
+        } else if (inst === 'harpsichord') {
+          osc1.setPeriodicWave(this.waves.harpsichord);
+          osc2.setPeriodicWave(this.waves.harpsichord);
+          osc2.detune.setValueAtTime(4.2, now);
+          osc2Gain.gain.setValueAtTime(0.4, now);
+        } else {
+          osc1.setPeriodicWave(this.waves.grand);
+          osc2.setPeriodicWave(this.waves.grand);
+          const detuneCents = midi < 48 ? 1.6 : 3.2;
+          osc2.detune.setValueAtTime(detuneCents, now);
+          osc2Gain.gain.setValueAtTime(0.42, now);
+        }
+
+        osc1.connect(filter);
+        osc2.connect(osc2Gain);
+        osc2Gain.connect(filter);
+
+        osc1.start(now);
+        osc2.start(now);
+        oscs.push(osc1, osc2);
+
+        if (inst === 'grand' || inst === 'felt' || inst === 'harpsichord') {
+          const hammer = this.ctx.createBufferSource();
+          hammer.buffer = this.hammerBuffer;
+
+          const hammerFilter = this.ctx.createBiquadFilter();
+          hammerFilter.type = 'bandpass';
+          hammerFilter.frequency.setValueAtTime(
+            Math.min(8000, freq * (inst === 'felt' ? 2.2 : 4.5)),
+            now
+          );
+          hammerFilter.Q.setValueAtTime(1.2, now);
+
+          const hammerGain = this.ctx.createGain();
+          const hammerAmt = inst === 'felt' ? 0.08 : inst === 'harpsichord' ? 0.22 : 0.15;
+          hammerGain.gain.setValueAtTime(hammerAmt * vel * (0.5 + brightness), now);
+
+          hammer.connect(hammerFilter);
+          hammerFilter.connect(hammerGain);
+          hammerGain.connect(voiceGain);
+          hammer.start(now);
+          oscs.push(hammer);
+        }
+
+        const maxCutoff = Math.min(16000, freq * (3.5 + brightness * 10) * (0.65 + vel * 0.55));
+        const sustainCutoff = Math.max(380, Math.min(9500, freq * (2.2 + brightness * 3.5)));
+        filter.frequency.setValueAtTime(
+          inst === 'felt' ? maxCutoff * 0.6 : maxCutoff,
+          now
+        );
+        filter.frequency.exponentialRampToValueAtTime(
+          inst === 'felt' ? sustainCutoff * 0.72 : sustainCutoff,
+          now + (inst === 'synth' ? 1.4 : 1.8)
+        );
+
+        const pitchScale = Math.pow(2, (60 - midi) / 36);
+        const releaseSec = Math.max(0.2, (Number(this.config.sustain) || 350) / 100);
+        const naturalDecay = Math.max(6.0, releaseSec * 2.2) * pitchScale;
+        const peakGain = 0.32 * Math.pow(vel, 1.15);
+        const attackTime = inst === 'felt' ? 0.008 : inst === 'synth' ? 0.018 : 0.003;
+
+        voiceGain.gain.setValueAtTime(0.0001, now);
+        voiceGain.gain.linearRampToValueAtTime(peakGain, now + attackTime);
+
+        if (inst === 'synth') {
+          voiceGain.gain.setTargetAtTime(peakGain * 0.85, now + attackTime, 0.25);
+        } else {
+          // Initial hammer bloom followed by a long, singing string sustain while held
+          voiceGain.gain.setTargetAtTime(peakGain * 0.80, now + attackTime, 0.35);
+          voiceGain.gain.setTargetAtTime(0.0001, now + attackTime + 0.45, naturalDecay);
+        }
+
+        const voice = {
+          midi,
+          oscs,
+          voiceGain,
+          filter,
+          outputNode,
+          peakGain,
+          startTime: now,
+          released: false
+        };
+        this.activeVoices.set(midi, voice);
+      }
+
+      noteOff(midi) {
+        const voice = this.activeVoices.get(midi);
+        if (!voice || voice.released) return;
+        voice.released = true;
+        this.activeVoices.delete(midi);
+
+        // config.sustain is in centiseconds (e.g. 350 = 3.5 seconds)
+        const releaseSec = Math.max(0.2, (Number(this.config.sustain) || 350) / 100);
+        this.stopVoice(voice, releaseSec);
+      }
+
+      stopVoice(voice, releaseSec) {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const gainParam = voice.voiceGain.gain;
+
+        this.releasedVoices.add(voice);
+        const elapsed = Math.max(0, now - (voice.startTime || now));
+        const estimatedGain = elapsed < 0.14
+          ? voice.peakGain * 0.86
+          : voice.peakGain * 0.78 * Math.exp(-elapsed / Math.max(2.5, releaseSec * 1.8));
+        const startGain = Math.max(0.001, gainParam.value || 0, estimatedGain);
+
+        if (typeof gainParam.cancelAndHoldAtTime === 'function') {
+          gainParam.cancelAndHoldAtTime(now);
+        }
+        gainParam.cancelScheduledValues(now);
+        gainParam.setValueAtTime(startGain, now);
+
+        // Two-stage musical sustain: warm singing body followed by smooth natural string decay
+        gainParam.linearRampToValueAtTime(startGain * 0.58, now + releaseSec * 0.42);
+        gainParam.exponentialRampToValueAtTime(0.0001, now + releaseSec * 1.85);
+
+        const totalRing = releaseSec * 1.9 + 0.12;
+        const stopAt = now + totalRing;
+        for (const src of voice.oscs) {
+          try {
+            src.stop(stopAt);
+          } catch {
+            // Ignore already-stopped buffer sources
+          }
+        }
+
+        setTimeout(() => {
+          this.releasedVoices.delete(voice);
+          try {
+            voice.outputNode.disconnect();
+          } catch {
+            // Ignore already disconnected node
+          }
+        }, (totalRing + 0.1) * 1000);
+      }
+
+      dampReleasedVoices(releaseSec = 0.35) {
+        if (!this.ctx) return;
+        for (const voice of this.releasedVoices) {
+          this.stopVoice(voice, releaseSec);
+        }
+      }
+    }
+
+    const STORAGE_KEY = 'piano_studio_config_v1';
+
+    const DEFAULT_CONFIG = {
+      instrument: 'grand',
+      volume: 85,
+      reverb: 35,
+      sustain: 350,
+      brightness: 60,
+      keysMode: 'auto',
+      minKeyWidth: 42,
+      portraitMode: 'single',
+      baseOctave: 4,
+      tuning: 440,
+      theme: 'classic',
+      glissando: true,
+      haptics: true,
+      dynamicVelocity: true,
+      showLabels: false
+    };
+
+    const NOTE_NAMES_ES = ['Do', 'Do#', 'Re', 'Re#', 'Mi', 'Fa', 'Fa#', 'Sol', 'Sol#', 'La', 'La#', 'Si'];
+    const WHITE_SEMITONES = new Set([0, 2, 4, 5, 7, 9, 11]);
+
+    const BLACK_SEAM_OFFSET = {
+      1: 0.57,
+      3: 0.43,
+      6: 0.57,
+      8: 0.50,
+      10: 0.43
+    };
+
+    const KEYBOARD_MAP = {
+      KeyZ: 0, KeyS: 1, KeyX: 2, KeyD: 3, KeyC: 4, KeyV: 5,
+      KeyG: 6, KeyB: 7, KeyH: 8, KeyN: 9, KeyJ: 10, KeyM: 11,
+      Comma: 12, KeyL: 13, Period: 14, Semicolon: 15, Slash: 16,
+      KeyQ: 12, Digit2: 13, KeyW: 14, Digit3: 15, KeyE: 16, KeyR: 17,
+      Digit5: 18, KeyT: 19, Digit6: 20, KeyY: 21, Digit7: 22, KeyU: 23,
+      KeyI: 24, Digit9: 25, KeyO: 26, Digit0: 27, KeyP: 28
+    };
+
+    function loadConfig() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { ...DEFAULT_CONFIG };
+        return { ...DEFAULT_CONFIG, ...JSON.parse(raw) };
+      } catch {
+        return { ...DEFAULT_CONFIG };
+      }
+    }
+
+    function saveConfig(cfg) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+      } catch {
+        // Ignore storage quota errors
+      }
+    }
+
+    const config = loadConfig();
+
+    function getEffectiveAudioConfig() {
+      return {
+        ...config,
+        sustain: Number(config.sustain) || 350
+      };
+    }
+
+    const audio = new PianoAudioEngine(getEffectiveAudioConfig());
+
+    const pianoShell = document.getElementById('piano-app');
+    const pianoCase = document.getElementById('piano-case');
+    const pianoRail = document.getElementById('piano-rail');
+    const stage = document.getElementById('keyboards-stage');
+    const configDialog = document.getElementById('config-dialog');
+    const configForm = document.getElementById('config-form');
+    const btnResetConfig = document.getElementById('btn-reset-config');
+
+    const btnOctDown = document.getElementById('btn-oct-down');
+    const btnOctUp = document.getElementById('btn-oct-up');
+    const octaveRangeDisplay = document.getElementById('octave-range-display');
+    const barInstrument = document.getElementById('bar-instrument');
+    const barSustain = document.getElementById('bar-sustain');
+    const barSustainVal = document.getElementById('bar-sustain-val');
+    const btnToggleLabels = document.getElementById('btn-toggle-labels');
+
+    const pointerNotes = new Map();
+    const keyboardNotes = new Map();
+    const midiElements = new Map();
+
+    function getEffectiveStageDimensions() {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const isPortrait = vh > vw;
+
+      if (isPortrait && config.portraitMode === 'rotated') {
+        return { width: vh, height: vw, isPortrait, isDual: false };
+      }
+
+      if (isPortrait && config.portraitMode === 'dual') {
+        return { width: vw, height: vh, isPortrait, isDual: true };
+      }
+
+      return { width: vw, height: vh, isPortrait, isDual: false };
+    }
+
+    function resolveWhiteKeyCount(effectiveWidth) {
+      if (config.keysMode !== 'auto') {
+        return Number(config.keysMode) || 15;
+      }
+      const availW = Math.max(220, effectiveWidth - 28);
+      const minKeyW = Math.max(32, Number(config.minKeyWidth) || 42);
+      const maxKeys = Math.floor(availW / minKeyW);
+      return Math.max(7, Math.min(52, maxKeys));
+    }
+
+    function generateDeckNotes(startOctave, targetWhiteKeys) {
+      const clampedStartOctave = Math.max(0, Math.min(7, startOctave));
+      const startMidi = (clampedStartOctave + 1) * 12;
+      const notes = [];
+      let whiteCount = 0;
+      let midi = startMidi;
+
+      while (whiteCount < targetWhiteKeys && midi <= 108) {
+        const semitone = midi % 12;
+        const isWhite = WHITE_SEMITONES.has(semitone);
+        const octave = Math.floor(midi / 12) - 1;
+        const name = `${NOTE_NAMES_ES[semitone]}${octave}`;
+
+        notes.push({
+          midi,
+          semitone,
+          octave,
+          name,
+          isWhite,
+          whiteIndex: isWhite ? whiteCount : whiteCount - 1
+        });
+
+        if (isWhite) {
+          whiteCount++;
+        }
+        midi++;
+      }
+
+      return { notes, whiteCount };
+    }
+
+    function createDeckElement(startOctave, whiteKeyCount) {
+      const { notes, whiteCount } = generateDeckNotes(startOctave, whiteKeyCount);
+      const deck = document.createElement('div');
+      deck.className = 'keyboard-deck';
+      deck.style.setProperty('--white-keys', String(whiteCount));
+
+      const whiteContainer = document.createElement('div');
+      whiteContainer.className = 'white-keys';
+
+      const blackContainer = document.createElement('div');
+      blackContainer.className = 'black-keys';
+
+      const whiteWidthPct = 100 / whiteCount;
+      const blackWidthRatio = whiteCount <= 11 ? 0.64 : 0.60;
+      const blackWidthPct = whiteWidthPct * blackWidthRatio;
+
+      for (const n of notes) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.midi = String(n.midi);
+        btn.setAttribute('aria-label', n.name);
+
+        const label = document.createElement('span');
+        label.className = 'key-label';
+        label.textContent = n.semitone === 0 ? n.name : NOTE_NAMES_ES[n.semitone];
+
+        if (n.isWhite) {
+          btn.className = 'piano-key white-key';
+          btn.appendChild(label);
+          whiteContainer.appendChild(btn);
+        } else {
+          btn.className = 'piano-key black-key';
+          const seamPct = (n.whiteIndex + 1) * whiteWidthPct;
+          const offsetFactor = BLACK_SEAM_OFFSET[n.semitone] ?? 0.5;
+          const leftPct = seamPct - blackWidthPct * offsetFactor;
+
+          btn.style.setProperty('--black-left', `${leftPct.toFixed(4)}%`);
+          btn.style.setProperty('--black-width', `${blackWidthPct.toFixed(4)}%`);
+
+          const surface = document.createElement('span');
+          surface.className = 'black-key-surface';
+          surface.appendChild(label);
+          btn.appendChild(surface);
+          blackContainer.appendChild(btn);
+        }
+
+        if (!midiElements.has(n.midi)) {
+          midiElements.set(n.midi, new Set());
+        }
+        midiElements.get(n.midi).add(btn);
+      }
+
+      deck.appendChild(whiteContainer);
+      deck.appendChild(blackContainer);
+
+      const firstNote = notes[0]?.name || 'Do4';
+      const lastNote = notes[notes.length - 1]?.name || 'Do5';
+      return { deck, firstNote, lastNote };
+    }
+
+    function syncTopBarUI(firstNote, lastNote) {
+      if (firstNote && lastNote) {
+        octaveRangeDisplay.textContent = `${firstNote}–${lastNote}`;
+      }
+      const sus = Number(config.sustain) || 350;
+      barInstrument.value = config.instrument;
+      barSustain.value = String(sus);
+      barSustainVal.value = `${(sus / 100).toFixed(1)}s`;
+      updateRangeProgressFallback(barSustain);
+      btnToggleLabels.setAttribute('aria-pressed', String(Boolean(config.showLabels)));
+      btnOctDown.disabled = Number(config.baseOctave) <= 2;
+      btnOctUp.disabled = Number(config.baseOctave) >= 5;
+    }
+
+    function renderPiano() {
+      releaseAllNotes();
+      midiElements.clear();
+      stage.replaceChildren();
+
+      pianoShell.dataset.theme = config.theme;
+      pianoShell.dataset.portraitMode = config.portraitMode;
+      pianoShell.dataset.labels = String(Boolean(config.showLabels));
+
+      const { width, isDual } = getEffectiveStageDimensions();
+      const baseOct = Number(config.baseOctave) || 4;
+      pianoCase.style.setProperty('--decks-count', isDual ? '2' : '1');
+
+      if (isDual) {
+        const perRowWhiteKeys = resolveWhiteKeyCount(width);
+        const upper = createDeckElement(Math.min(6, baseOct + 1), perRowWhiteKeys);
+        const lower = createDeckElement(baseOct, perRowWhiteKeys);
+        stage.appendChild(upper.deck);
+        stage.appendChild(lower.deck);
+        syncTopBarUI(lower.firstNote, upper.lastNote);
+      } else {
+        const whiteKeyCount = resolveWhiteKeyCount(width);
+        const octavesBelow = Math.floor((whiteKeyCount - 1) / 14);
+        const startOctave = Math.max(1, Math.min(6, baseOct - octavesBelow));
+        const single = createDeckElement(startOctave, whiteKeyCount);
+        stage.appendChild(single.deck);
+        syncTopBarUI(single.firstNote, single.lastNote);
+      }
+    }
+
+    function isMidiHeld(midi) {
+      for (const m of pointerNotes.values()) {
+        if (m === midi) return true;
+      }
+      for (const m of keyboardNotes.values()) {
+        if (m === midi) return true;
+      }
+      return false;
+    }
+
+    function updateKeyVisual(midi, active) {
+      const els = midiElements.get(midi);
+      if (!els) return;
+      for (const el of els) {
+        el.classList.toggle('is-active', active);
+      }
+    }
+
+    function triggerHaptic() {
+      if (config.haptics && typeof navigator.vibrate === 'function') {
+        try {
+          navigator.vibrate(7);
+        } catch {
+          // Ignore vibration restrictions
+        }
+      }
+    }
+
+    function computeTouchVelocity(e, keyEl) {
+      if (!config.dynamicVelocity) return 0.82;
+      const rect = keyEl.getBoundingClientRect();
+      if (!rect.width || !rect.height) return 0.82;
+
+      let ratio = 0.75;
+      if (rect.height >= rect.width) {
+        ratio = (e.clientY - rect.top) / rect.height;
+      } else {
+        ratio = (rect.right - e.clientX) / rect.width;
+      }
+      const clamped = Math.max(0, Math.min(1, ratio));
+      return 0.42 + clamped * 0.58;
+    }
+
+    function pressNoteFromPointer(pointerId, midi, velocity) {
+      const prevMidi = pointerNotes.get(pointerId);
+      if (prevMidi === midi) return;
+
+      if (prevMidi !== undefined) {
+        pointerNotes.delete(pointerId);
+        if (!isMidiHeld(prevMidi)) {
+          audio.noteOff(prevMidi);
+          updateKeyVisual(prevMidi, false);
+        }
+      }
+
+      if (midi !== null && midi !== undefined) {
+        const alreadyActive = isMidiHeld(midi);
+        pointerNotes.set(pointerId, midi);
+        audio.noteOn(midi, velocity);
+        updateKeyVisual(midi, true);
+        if (!alreadyActive) {
+          triggerHaptic();
+        }
+      }
+    }
+
+    function releasePointer(pointerId) {
+      const prevMidi = pointerNotes.get(pointerId);
+      if (prevMidi === undefined) return;
+      pointerNotes.delete(pointerId);
+      if (!isMidiHeld(prevMidi)) {
+        audio.noteOff(prevMidi);
+        updateKeyVisual(prevMidi, false);
+      }
+    }
+
+    function releaseAllNotes() {
+      for (const midi of new Set([...pointerNotes.values(), ...keyboardNotes.values()])) {
+        audio.noteOff(midi);
+        updateKeyVisual(midi, false);
+      }
+      pointerNotes.clear();
+      keyboardNotes.clear();
+    }
+
+    function getKeyElementAtPoint(x, y) {
+      const el = document.elementFromPoint(x, y);
+      return el ? el.closest('.piano-key') : null;
+    }
+
+    stage.addEventListener('pointerdown', (e) => {
+      if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return;
+      e.preventDefault();
+
+      if (e.target && typeof e.target.releasePointerCapture === 'function') {
+        try {
+          if (e.target.hasPointerCapture(e.pointerId)) {
+            e.target.releasePointerCapture(e.pointerId);
+          }
+        } catch {
+          // Ignore if not captured
+        }
+      }
+
+      const keyEl = e.target.closest('.piano-key') || getKeyElementAtPoint(e.clientX, e.clientY);
+      if (!keyEl) return;
+
+      const midi = Number(keyEl.dataset.midi);
+      const velocity = computeTouchVelocity(e, keyEl);
+      pressNoteFromPointer(e.pointerId, midi, velocity);
+    });
+
+    stage.addEventListener('pointermove', (e) => {
+      if (!pointerNotes.has(e.pointerId)) return;
+      if (!config.glissando) return;
+      e.preventDefault();
+
+      const keyEl = getKeyElementAtPoint(e.clientX, e.clientY);
+      if (!keyEl) {
+        releasePointer(e.pointerId);
+        return;
+      }
+
+      const midi = Number(keyEl.dataset.midi);
+      if (pointerNotes.get(e.pointerId) !== midi) {
+        const velocity = computeTouchVelocity(e, keyEl);
+        pressNoteFromPointer(e.pointerId, midi, velocity);
+      }
+    });
+
+    window.addEventListener('pointerup', (e) => {
+      releasePointer(e.pointerId);
+    });
+
+    window.addEventListener('pointercancel', (e) => {
+      releasePointer(e.pointerId);
+    });
+
+    window.addEventListener('blur', () => {
+      releaseAllNotes();
+    });
+
+    stage.addEventListener('contextmenu', (e) => e.preventDefault());
+    pianoRail.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    btnOctDown.addEventListener('click', () => {
+      const cur = Number(config.baseOctave) || 4;
+      if (cur > 2) {
+        config.baseOctave = cur - 1;
+        saveConfig(config);
+        syncFormFromConfig();
+        renderPiano();
+      }
+    });
+
+    btnOctUp.addEventListener('click', () => {
+      const cur = Number(config.baseOctave) || 4;
+      if (cur < 5) {
+        config.baseOctave = cur + 1;
+        saveConfig(config);
+        syncFormFromConfig();
+        renderPiano();
+      }
+    });
+
+    barInstrument.addEventListener('change', () => {
+      config.instrument = barInstrument.value;
+      saveConfig(config);
+      audio.updateConfig(getEffectiveAudioConfig());
+      syncFormFromConfig();
+    });
+
+    barSustain.addEventListener('input', () => {
+      const prevSustain = Number(config.sustain) || 350;
+      const newSustain = Number(barSustain.value) || 350;
+      config.sustain = newSustain;
+      barSustainVal.value = `${(newSustain / 100).toFixed(1)}s`;
+      updateRangeProgressFallback(barSustain);
+      saveConfig(config);
+      audio.updateConfig(getEffectiveAudioConfig());
+      if (newSustain < prevSustain) {
+        audio.dampReleasedVoices(Math.max(0.2, newSustain / 100));
+      }
+      syncFormFromConfig();
+    });
+
+    btnToggleLabels.addEventListener('click', () => {
+      config.showLabels = !config.showLabels;
+      saveConfig(config);
+      pianoShell.dataset.labels = String(Boolean(config.showLabels));
+      btnToggleLabels.setAttribute('aria-pressed', String(Boolean(config.showLabels)));
+      syncFormFromConfig();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (configDialog.open) return;
+      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+
+      const offset = KEYBOARD_MAP[e.code];
+      if (offset === undefined) return;
+
+      const baseMidi = (Number(config.baseOctave) + 1) * 12;
+      const midi = baseMidi + offset;
+      if (keyboardNotes.has(e.code)) return;
+
+      keyboardNotes.set(e.code, midi);
+      audio.noteOn(midi, 0.82);
+      updateKeyVisual(midi, true);
+    });
+
+    window.addEventListener('keyup', (e) => {
+      const midi = keyboardNotes.get(e.code);
+      if (midi === undefined) return;
+      keyboardNotes.delete(e.code);
+      if (!isMidiHeld(midi)) {
+        audio.noteOff(midi);
+        updateKeyVisual(midi, false);
+      }
+    });
+
+    if (typeof navigator.requestMIDIAccess === 'function') {
+      navigator.requestMIDIAccess().then((midiAccess) => {
+        const attachInputs = () => {
+          for (const input of midiAccess.inputs.values()) {
+            input.onmidimessage = (msg) => {
+              const [status, note, velocity] = msg.data;
+              const cmd = status & 0xf0;
+              if (cmd === 0x90 && velocity > 0) {
+                audio.noteOn(note, velocity / 127);
+                updateKeyVisual(note, true);
+              } else if (cmd === 0x80 || (cmd === 0x90 && velocity === 0)) {
+                audio.noteOff(note);
+                updateKeyVisual(note, false);
+              }
+            };
+          }
+        };
+        attachInputs();
+        midiAccess.onstatechange = attachInputs;
+      }).catch(() => {
+        // Ignore MIDI permission denial
+      });
+    }
+
+    const supportsAccentColor = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('accent-color', '#c99738');
+
+    function updateRangeProgressFallback(input) {
+      if (supportsAccentColor) return;
+      const min = Number(input.min) || 0;
+      const max = Number(input.max) || 100;
+      const val = Number(input.value) || 0;
+      const pct = ((val - min) / (max - min)) * 100;
+      input.style.setProperty('--progress', `${pct}%`);
+    }
+
+    function syncFormFromConfig() {
+      const instRadio = configForm.querySelector(`input[name="instrument"][value="${config.instrument}"]`);
+      if (instRadio) instRadio.checked = true;
+
+      const themeRadio = configForm.querySelector(`input[name="theme"][value="${config.theme}"]`);
+      if (themeRadio) themeRadio.checked = true;
+
+      const volumeInput = document.getElementById('cfg-volume');
+      const reverbInput = document.getElementById('cfg-reverb');
+      const sustainInput = document.getElementById('cfg-sustain');
+      const brightnessInput = document.getElementById('cfg-brightness');
+      const minKeyWidthInput = document.getElementById('cfg-min-key-width');
+
+      volumeInput.value = String(config.volume);
+      reverbInput.value = String(config.reverb);
+      sustainInput.value = String(config.sustain);
+      brightnessInput.value = String(config.brightness);
+      minKeyWidthInput.value = String(config.minKeyWidth || 42);
+
+      document.getElementById('out-volume').value = `${config.volume}%`;
+      document.getElementById('out-reverb').value = `${config.reverb}%`;
+      document.getElementById('out-sustain').value = `${(config.sustain / 100).toFixed(1)} s`;
+      document.getElementById('out-brightness').value = `${config.brightness}%`;
+      document.getElementById('out-min-key-width').value = `${config.minKeyWidth || 42} px`;
+
+      for (const slider of [volumeInput, reverbInput, sustainInput, brightnessInput, minKeyWidthInput]) {
+        updateRangeProgressFallback(slider);
+      }
+
+      document.getElementById('cfg-keys-mode').value = String(config.keysMode);
+      document.getElementById('cfg-portrait-mode').value = String(config.portraitMode);
+      document.getElementById('cfg-octave').value = String(config.baseOctave);
+      document.getElementById('cfg-tuning').value = String(config.tuning);
+
+      document.getElementById('cfg-glissando').checked = Boolean(config.glissando);
+      document.getElementById('cfg-haptics').checked = Boolean(config.haptics);
+      document.getElementById('cfg-velocity-y').checked = Boolean(config.dynamicVelocity);
+      document.getElementById('cfg-labels').checked = Boolean(config.showLabels);
+    }
+
+    function handleFormChange() {
+      const formData = new FormData(configForm);
+      const prevKeysMode = config.keysMode;
+      const prevMinKeyWidth = config.minKeyWidth;
+      const prevPortraitMode = config.portraitMode;
+      const prevBaseOctave = config.baseOctave;
+
+      config.instrument = formData.get('instrument') || 'grand';
+      config.theme = formData.get('theme') || 'classic';
+      config.volume = Number(formData.get('volume'));
+      config.reverb = Number(formData.get('reverb'));
+      config.sustain = Number(formData.get('sustain'));
+      config.brightness = Number(formData.get('brightness'));
+      config.keysMode = formData.get('keysMode') || 'auto';
+      config.minKeyWidth = Number(formData.get('minKeyWidth')) || 42;
+      config.portraitMode = formData.get('portraitMode') || 'single';
+      config.baseOctave = Number(formData.get('baseOctave')) || 4;
+      config.tuning = Number(formData.get('tuning')) || 440;
+
+      config.glissando = document.getElementById('cfg-glissando').checked;
+      config.haptics = document.getElementById('cfg-haptics').checked;
+      config.dynamicVelocity = document.getElementById('cfg-velocity-y').checked;
+      config.showLabels = document.getElementById('cfg-labels').checked;
+
+      document.getElementById('out-volume').value = `${config.volume}%`;
+      document.getElementById('out-reverb').value = `${config.reverb}%`;
+      document.getElementById('out-sustain').value = `${(config.sustain / 100).toFixed(1)} s`;
+      document.getElementById('out-brightness').value = `${config.brightness}%`;
+      document.getElementById('out-min-key-width').value = `${config.minKeyWidth} px`;
+
+      for (const slider of configForm.querySelectorAll('input[type="range"]')) {
+        updateRangeProgressFallback(slider);
+      }
+
+      saveConfig(config);
+      audio.updateConfig(getEffectiveAudioConfig());
+
+      pianoShell.dataset.theme = config.theme;
+      pianoShell.dataset.portraitMode = config.portraitMode;
+      pianoShell.dataset.labels = String(Boolean(config.showLabels));
+      syncTopBarUI();
+
+      if (
+        prevKeysMode !== config.keysMode ||
+        prevMinKeyWidth !== config.minKeyWidth ||
+        prevPortraitMode !== config.portraitMode ||
+        prevBaseOctave !== config.baseOctave
+      ) {
+        renderPiano();
+      }
+    }
+
+    configForm.addEventListener('input', handleFormChange);
+    configForm.addEventListener('change', handleFormChange);
+
+    btnResetConfig.addEventListener('click', () => {
+      Object.assign(config, DEFAULT_CONFIG);
+      saveConfig(config);
+      syncFormFromConfig();
+      audio.updateConfig(getEffectiveAudioConfig());
+      renderPiano();
+    });
+
+    function syncRouteWithDialog() {
+      const isConfigRoute = window.location.hash.toLowerCase() === '#config';
+      if (isConfigRoute) {
+        releaseAllNotes();
+        syncFormFromConfig();
+        if (!configDialog.open) {
+          configDialog.showModal();
+        }
+      } else if (configDialog.open) {
+        configDialog.close();
+      }
+    }
+
+    configDialog.addEventListener('close', () => {
+      configDialog.returnValue = '';
+      if (window.location.hash.toLowerCase() === '#config') {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    });
+
+    if (!('closedBy' in HTMLDialogElement.prototype)) {
+      const outside = (e, dialog) => {
+        const r = dialog.getBoundingClientRect();
+        return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+      };
+      for (const dialog of document.querySelectorAll('dialog[closedby="any"]')) {
+        let pressedOutside = false;
+        dialog.addEventListener('pointerdown', (e) => {
+          pressedOutside = outside(e, dialog);
+        });
+        dialog.addEventListener('pointerup', (e) => {
+          if (pressedOutside && outside(e, dialog)) {
+            dialog.close();
+          }
+        });
+      }
+    }
+
+    window.addEventListener('hashchange', syncRouteWithDialog);
+
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        renderPiano();
+      }, 60);
+    });
+
+    syncFormFromConfig();
+    renderPiano();
+    syncRouteWithDialog();
+  </script>
 </body>
 </html>
